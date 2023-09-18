@@ -39,6 +39,7 @@ struct audio_card {
     unsigned int  supported_in_devices;
     struct route_setting *init_ctl;
     struct route_setting *speaker_ctl;
+    struct route_setting *earpiece_ctl;
     struct route_setting *headphone_ctl;
     struct route_setting *builtin_mic_ctl;
     struct route_setting *headset_mic_ctl;

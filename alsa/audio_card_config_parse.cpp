@@ -39,6 +39,7 @@ static const char* const g_key_supported_out_devices = "supported_out_devices";
 static const char* const g_key_supported_in_devices = "supported_in_devices";
 static const char* const g_key_init_ctl = "init_ctl";
 static const char* const g_key_speaker_ctl = "speaker_ctl";
+static const char* const g_key_earpiece_ctl = "earpiece_ctl";
 static const char* const g_key_headphone_ctl = "headphone_ctl";
 static const char* const g_key_builtin_mic_ctl = "builtin_mic_ctl";
 static const char* const g_key_headset_mic_ctl = "headset_mic_ctl";
@@ -62,6 +63,7 @@ struct audio_devcie_map {
 };
 
 static const struct audio_devcie_map g_out_device_map[] = {
+    {"earpiece", AUDIO_DEVICE_OUT_EARPIECE},
     {"speaker", AUDIO_DEVICE_OUT_SPEAKER},
     {"wired_headset", AUDIO_DEVICE_OUT_WIRED_HEADSET},
     {"wired_headphone", AUDIO_DEVICE_OUT_WIRED_HEADPHONE},
@@ -219,6 +221,9 @@ static bool parse_one_card(char *config_file, struct audio_card **pp_audio_card)
     if(root.isMember(g_key_init_ctl))
         parse_control(&p_audio_card->init_ctl, root[g_key_init_ctl]);
 
+    if(root.isMember(g_key_earpiece_ctl))
+        parse_control(&p_audio_card->earpiece_ctl, root[g_key_earpiece_ctl]);
+
     if(root.isMember(g_key_speaker_ctl))
         parse_control(&p_audio_card->speaker_ctl, root[g_key_speaker_ctl]);
 
@@ -371,6 +376,9 @@ bool release_one_card(struct audio_card *audio_card) {
 
     if(audio_card->speaker_ctl)
         release_route(audio_card->speaker_ctl);
+
+    if(audio_card->earpiece_ctl)
+        release_route(audio_card->earpiece_ctl);
 
     if(audio_card->headphone_ctl)
         release_route(audio_card->headphone_ctl);

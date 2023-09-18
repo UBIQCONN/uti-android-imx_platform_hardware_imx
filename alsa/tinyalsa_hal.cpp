@@ -427,18 +427,22 @@ static void select_output_device(struct imx_audio_device *adev)
     int headset_on;
     int headphone_on;
     int speaker_on;
+    int earpiece_on;
     int i;
 
     headset_on      = adev->out_device & AUDIO_DEVICE_OUT_WIRED_HEADSET;
     headphone_on    = adev->out_device & (AUDIO_DEVICE_OUT_WIRED_HEADPHONE | AUDIO_DEVICE_OUT_BUS);
     speaker_on      = adev->out_device & (AUDIO_DEVICE_OUT_SPEAKER | AUDIO_DEVICE_OUT_BUS);
+    earpiece_on     = adev->out_device & (AUDIO_DEVICE_OUT_EARPIECE);
 
-    ALOGI("%s(), headphone %d ,headset %d ,speaker %d\n", __func__, headphone_on, headset_on, speaker_on);
+    ALOGI("%s(), headphone %d ,headset %d ,speaker %d, earpiece %d\n", __func__, headphone_on, headset_on, speaker_on, earpiece_on);
     /* select output stage */
     for(i = 0; i < adev->audio_card_num; i++)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->headphone_ctl, headset_on | headphone_on);
     for(i = 0; i < adev->audio_card_num; i++)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->speaker_ctl, speaker_on);
+    for(i = 0; i < adev->audio_card_num; i++)
+        set_route_by_array(adev->mixer[i], adev->card_list[i]->earpiece_ctl, earpiece_on);
 }
 
 static void select_input_device(struct imx_audio_device *adev)
@@ -682,6 +686,8 @@ static int start_output_stream(struct imx_stream_out *out)
 
     ALOGI("%s: primary: %d, out: %p, device: %d, address: %s, mode: %d, flags 0x%x", __func__,
             (out == adev->primary_output), out, out->device, out->address, adev->mode, out->flags);
+
+    adev->out_device = out->device;
 
     if (adev->mode != AUDIO_MODE_IN_CALL) {
         select_output_device(adev);
@@ -3241,6 +3247,7 @@ static int adev_create_audio_patch(struct audio_hw_device *dev,
         pthread_mutex_lock(&out->lock);
         for (out->num_devices = 0; out->num_devices < num_sinks; out->num_devices++) {
             out->devices[out->num_devices] = sinks[out->num_devices].ext.device.type;
+            ALOGD("%s()  device to %x", __func__, out->devices[out->num_devices]);
         }
         if (out->device != sinks[0].ext.device.type) {
             out->device = sinks[0].ext.device.type;

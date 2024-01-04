@@ -38,7 +38,7 @@
 
 /*****************************************************************************/
 LightSensor::LightSensor()
-    : SensorBase(NULL, "isl29023 light sensor"),
+    : SensorBase(NULL, "light"),
       mEnabled(0),
       mInputReader(4),
       mHasPendingEvent(false),
@@ -72,7 +72,19 @@ LightSensor::~LightSensor() {
 
 int LightSensor::setDelay(__attribute__((unused))int32_t handle, __attribute__((unused))int64_t ns)
 {
-    //dummy due to not support in driver....
+    char buf[16];
+    int n;
+    FILE *fd = NULL;
+    strcpy(&ls_sysfs_path[ls_sysfs_path_len], "delay");
+    fd = fopen(ls_sysfs_path, "r+");
+
+    if (fd) {
+         memset(buf, 0, 16);
+         snprintf(buf, 16, "%d", (ns/1000000LL));
+         n = fwrite(buf, 16, 1, fd);
+         fclose(fd);
+         return 0;
+    }
     return 0;
 }
 
@@ -85,15 +97,15 @@ int LightSensor::enable(__attribute__((unused))int32_t handle, int en)
     mPreviousLight = -1;
     if (flags != mEnabled) {
         FILE *fd = NULL;
-        strcpy(&ls_sysfs_path[ls_sysfs_path_len], "mode");
+        strcpy(&ls_sysfs_path[ls_sysfs_path_len], "enable");
         fd = fopen(ls_sysfs_path, "r+");
 
-        ALOGE("########fopen %s\n", ls_sysfs_path);
+        ALOGE("########fopen %s %d\n", ls_sysfs_path, en);
 
         if (fd) {
             memset(buf, 0, 2);
             if (flags)
-                snprintf(buf, 2, "%d", ISL29023_ALS_CONT_MODE);
+                snprintf(buf, 2, "%d", 1);
             else
                 snprintf(buf, 2, "%d", 0);
             n = fwrite(buf, 1, 1, fd);
@@ -115,7 +127,7 @@ int LightSensor::setIntLux()
     int n, lux, int_ht_lux, int_lt_lux;
 
     /* Read current lux value firstly, then change Delta value */
-    strcpy(&ls_sysfs_path[ls_sysfs_path_len], "lux");
+    strcpy(&ls_sysfs_path[ls_sysfs_path_len], "light_value");
     if ((fd = fopen(ls_sysfs_path, "r")) == NULL) {
         ALOGE("Unable to open %s\n", ls_sysfs_path);
         return -1;
@@ -138,6 +150,7 @@ int LightSensor::setIntLux()
     DEBUG("Current light is %d lux\n", lux);
 
     /* Set low lux and high interrupt lux for polling */
+    /*
     strcpy(&ls_sysfs_path[ls_sysfs_path_len], "int_lt_lux");
     fd = fopen(ls_sysfs_path, "r+");
     if (fd) {
@@ -156,7 +169,7 @@ int LightSensor::setIntLux()
         fclose(fd);
     } else
         ALOGE("Couldn't open %s file\n", ls_sysfs_path);
-
+    */
     return 0;
 }
 

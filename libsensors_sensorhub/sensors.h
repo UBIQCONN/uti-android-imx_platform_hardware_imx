@@ -82,6 +82,8 @@ __BEGIN_DECLS
 
 #define EVENT_TYPE_TEMPERATURE      ABS_MISC
 
+#define EVENT_TYPE_PROXIMITY        ABS_DISTANCE
+
 #define LSG                         (0x4000)
 
 // conversion of acceleration data to SI units (m/s^2)
@@ -110,6 +112,7 @@ __BEGIN_DECLS
 
 #define SENSOR_STATE_MASK           (0x7FFF)
 
+#define PROXIMITY_THRESHOLD_GP2A    5.0f
 /*****************************************************************************/
 
 __END_DECLS

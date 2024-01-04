@@ -39,6 +39,7 @@
 #include "FSLSensorsHub.h"
 
 #include "LightSensor.h"
+#include "ProximitySensor.h"
 
 /*****************************************************************************/
 
@@ -192,8 +193,8 @@ static const struct sensor_t sSensorList[] = {
     .reserved =   {}
     },
     {
-    .name =       "ISL29023 Light sensor",
-    .vendor =     "Intersil",
+    .name =       "TMD2725 Light sensor",
+    .vendor =     "Ams",
     .version=     1,
     .handle =     SENSORS_LIGHT_HANDLE,
     .type =       SENSOR_TYPE_LIGHT,
@@ -207,6 +208,24 @@ static const struct sensor_t sSensorList[] = {
     .requiredPermission =     0,
     .maxDelay =               0,
     .flags =      SENSOR_FLAG_ON_CHANGE_MODE,
+    .reserved =   {}
+    },
+    {
+    .name =       "TMD2725 Proximity sensor",
+    .vendor =     "Ams",
+    .version=     1,
+    .handle =     SENSORS_PROXIMITY_HANDLE,
+    .type =       EVENT_TYPE_PROXIMITY,
+    .maxRange =   255.0f,
+    .resolution = 1.0f,
+    .power =      0.35f,
+    .minDelay =   0,
+    .fifoReservedEventCount = 0,
+    .fifoMaxEventCount =      0,
+    .stringType =             SENSOR_STRING_TYPE_PROXIMITY,
+    .requiredPermission =     0,
+    .maxDelay =               0,
+    .flags =      SENSOR_FLAG_ONE_SHOT_MODE,
     .reserved =   {}
     },
 #endif
@@ -296,6 +315,7 @@ private:
         press,
         temperature,
         light,
+        proximity,
 #endif
 #ifdef CONFIG_SENSOR_PEDOMETER
         step_counter,
@@ -330,6 +350,9 @@ private:
             case ID_L:
                 return light;
                 break;
+            case ID_PX:
+                return proximity;
+                break;
             case ID_A:
             case ID_M:
             case ID_O:
@@ -363,6 +386,7 @@ sensors_poll_context_t::sensors_poll_context_t()
     mSensors[press] = new PressSensor();
     mSensors[temperature] = new PressSensor();
     mSensors[light] = new LightSensor();
+    mSensors[proximity] = new ProximitySensor();
 #endif
 #ifdef CONFIG_SENSOR_PEDOMETER
     mSensors[step_counter] = new Stepcounter();

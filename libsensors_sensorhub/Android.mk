@@ -48,6 +48,7 @@ ifeq ($(BOARD_USE_LEGACY_SENSOR),true)
     LOCAL_SRC_FILES += FSLSensorsHub.cpp
     LOCAL_SRC_FILES += PressSensor.cpp
     LOCAL_SRC_FILES += LightSensor.cpp
+    LOCAL_SRC_FILES += ProximitySensor.cpp
 endif
 ifeq ($(BOARD_USE_SENSOR_PEDOMETER),true)
     LOCAL_CFLAGS += -DCONFIG_SENSOR_PEDOMETER

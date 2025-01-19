@@ -443,6 +443,8 @@ static void select_output_device(struct imx_audio_device *adev)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->speaker_ctl, speaker_on);
     for(i = 0; i < adev->audio_card_num; i++)
         set_route_by_array(adev->mixer[i], adev->card_list[i]->earpiece_ctl, earpiece_on);
+    for(i = 0; i < adev->audio_card_num; i++)
+        set_route_by_array(adev->mixer[i], adev->card_list[i]->unmute_ctl, (earpiece_on|speaker_on));
 }
 
 static void select_input_device(struct imx_audio_device *adev)
@@ -1217,6 +1219,24 @@ static uint32_t out_get_latency(const struct audio_stream_out *stream)
         latency = LPA_LATENCY_MS;
     }
     return latency;
+}
+
+static int out_set_control_mute(struct mixer *mixer, struct route_setting *route, int value)
+{
+    struct mixer_ctl *ctl;
+    int i = 0;
+
+    if (!mixer || !route) {
+        ALOGE("%s: mixer or route_setting is NULL", __func__);
+        return -EINVAL;
+    }
+
+    ctl = mixer_get_ctl_by_name(mixer, route[i].ctl_name);
+    if (!ctl)
+        return -ENOSYS;
+    mixer_ctl_set_value(ctl, 0, value);
+    mixer_ctl_set_value(ctl, 1, value);
+    return 0;
 }
 
 static int out_set_control_volume(struct mixer *mixer, struct route_setting *route, int left, int right)
@@ -4039,9 +4059,22 @@ static int adev_set_voice_volume(struct audio_hw_device *dev, float volume)
     return 0;
 }
 
-static int adev_set_master_volume(struct audio_hw_device *dev __unused, float volume __unused)
+static int adev_set_master_volume(struct audio_hw_device *dev, float volume)
 {
-    return -ENOSYS;
+    int card_index = 1;
+    struct imx_audio_device *adev = (struct imx_audio_device *)dev;
+    struct mixer *mixer = adev->mixer[card_index];
+    struct route_setting *mute = adev->card_list[card_index]->mute_ctl;
+    int value = 1;
+    static float new_volume = 1;
+
+    if (new_volume != volume) {
+        value = (volume == 0) ?0 :1;
+        out_set_control_mute(mixer, mute, value);
+        new_volume = volume;
+        ALOGI("%s: set mute_ctl %d", __func__, value);
+    }
+    return 0;
 }
 
 static int adev_set_mode(struct audio_hw_device *dev, audio_mode_t mode)

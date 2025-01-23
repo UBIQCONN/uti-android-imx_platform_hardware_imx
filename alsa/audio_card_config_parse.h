@@ -44,8 +44,6 @@ struct audio_card {
     struct route_setting *builtin_mic_ctl;
     struct route_setting *headset_mic_ctl;
     struct route_setting *out_volume_ctl;
-    struct route_setting *mute_ctl;
-    struct route_setting *unmute_ctl;
     int  card;
     int  out_format;
     int  in_format;
